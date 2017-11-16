@@ -1474,12 +1474,9 @@ subroutine PatchUpdateCouplerAuxVarsWF(patch,coupler,option)
 
   use Option_module
   use Condition_module
-  use Hydrostatic_module
-  use Saturation_module
-  use EOS_Water_module
+  use Utility_module, only : DeallocateArray
   
   use WIPP_Flow_Aux_module
-  use Grid_module
   use Dataset_Common_HDF5_class
   use Dataset_Gridded_HDF5_class
   use Dataset_Ascii_class
@@ -1497,7 +1494,7 @@ subroutine PatchUpdateCouplerAuxVarsWF(patch,coupler,option)
   type(tran_condition_type), pointer :: tran_condition
   type(flow_general_condition_type), pointer :: general
   PetscBool :: update
-  PetscBool :: dof1, dof2, dof3
+  PetscBool :: dof1, dof2
   PetscReal :: temperature, p_sat, p_air, p_gas, p_cap, s_liq, xmol
   PetscReal :: relative_humidity
   PetscReal :: dummy_real
@@ -1517,20 +1514,25 @@ subroutine PatchUpdateCouplerAuxVarsWF(patch,coupler,option)
   general => flow_condition%general
   dof1 = PETSC_FALSE
   dof2 = PETSC_FALSE
-  dof3 = PETSC_FALSE
   real_count = 0
   select case(flow_condition%iphase)
     case(TWO_PHASE_STATE)
       coupler%flow_aux_int_var(WIPPFLO_STATE_INDEX,1:num_connections) = &
         TWO_PHASE_STATE
-      real_count = real_count + 1
       select case(general%liquid_pressure%itype)
         case(DIRICHLET_BC)
-          coupler%flow_aux_mapping(WIPPFLO_LIQUID_PRESSURE_INDEX) = real_count
-          coupler%flow_aux_real_var(real_count,1:num_connections) = &
-            general%liquid_pressure%dataset%rarray(1)
+          select type(dataset => general%liquid_pressure%dataset)
+            class is(dataset_ascii_type)
+              real_count = real_count + 1
+              coupler%flow_aux_mapping(WIPPFLO_LIQUID_PRESSURE_INDEX) = &
+                real_count
+              coupler%flow_aux_real_var(real_count,1:num_connections) = &
+                dataset%rarray(1)
+              coupler%flow_bc_type(WIPPFLO_LIQUID_EQUATION_INDEX) = &
+                DIRICHLET_BC
+            class default
+          end select
           dof1 = PETSC_TRUE
-          coupler%flow_bc_type(WIPPFLO_LIQUID_EQUATION_INDEX) = DIRICHLET_BC
         case default
           string = &
             GetSubConditionName(general%liquid_pressure%itype)
@@ -1540,14 +1542,19 @@ subroutine PatchUpdateCouplerAuxVarsWF(patch,coupler,option)
           call printErrMsg(option)
       end select
       ! in two-phase flow, gas saturation is second dof
-      real_count = real_count + 1
       select case(general%gas_saturation%itype)
         case(DIRICHLET_BC)
-          coupler%flow_aux_mapping(WIPPFLO_GAS_SATURATION_INDEX) = real_count
-          coupler%flow_aux_real_var(real_count,1:num_connections) = &
-            general%gas_saturation%dataset%rarray(1)
+          select type(dataset => general%gas_saturation%dataset)
+            class is(dataset_ascii_type)
+              real_count = real_count + 1
+              coupler%flow_aux_mapping(WIPPFLO_GAS_SATURATION_INDEX) = &
+                real_count
+              coupler%flow_aux_real_var(real_count,1:num_connections) = &
+                dataset%rarray(1)
+              coupler%flow_bc_type(WIPPFLO_GAS_EQUATION_INDEX) = DIRICHLET_BC
+            class default
+          end select
           dof2 = PETSC_TRUE
-          coupler%flow_bc_type(WIPPFLO_GAS_EQUATION_INDEX) = DIRICHLET_BC
         case default
           string = &
             GetSubConditionName(general%gas_saturation%itype)
@@ -1637,9 +1644,17 @@ subroutine PatchUpdateCouplerAuxVarsWF(patch,coupler,option)
     end select
   endif
 
+  if (real_count == 0) then ! no need for the auxiliary arrays
+    call DeallocateArray(coupler%flow_aux_mapping)
+    call DeallocateArray(coupler%flow_bc_type)
+    call DeallocateArray(coupler%flow_aux_real_var)
+    call DeallocateArray(coupler%flow_aux_int_var)
+  endif
+
   !geh: is this really correct, or should it be .or.
-  if (.not.dof1 .or. .not.dof2 .or. .not.dof3) then
+  if (.not.dof1 .or. .not.dof2) then
     option%io_buffer = 'Error with general phase boundary condition'
+    call printErrMsg(option)
   endif
 
 end subroutine PatchUpdateCouplerAuxVarsWF
@@ -4045,6 +4060,7 @@ subroutine PatchGetVariable1(patch,field,reaction,option,output_option,vec, &
   use Reaction_Surface_Complexation_Aux_module
   use General_Aux_module, only : general_fmw => fmw_comp, &
                                  GAS_STATE, LIQUID_STATE
+  use WIPP_Flow_Aux_module, only : WIPPFloScalePerm
   use Output_Aux_module
   use Variables_module
   use Material_Aux_class
@@ -5525,17 +5541,41 @@ subroutine PatchGetVariable1(patch,field,reaction,option,output_option,vec, &
               patch%aux%RT%auxvars(grid%nL2G(local_id))%auxiliary_data(isubvar)
           enddo
       end select
-    case(POROSITY,MINERAL_POROSITY,PERMEABILITY,PERMEABILITY_X, &
-         PERMEABILITY_Y, PERMEABILITY_Z,PERMEABILITY_XY,PERMEABILITY_XZ, &
-         PERMEABILITY_YZ,VOLUME,TORTUOSITY,SOIL_COMPRESSIBILITY, &
+    case(POROSITY,MINERAL_POROSITY,VOLUME,TORTUOSITY,SOIL_COMPRESSIBILITY, &
          SOIL_REFERENCE_PRESSURE)
+      do local_id=1,grid%nlmax
+        vec_ptr(local_id) = &
+          MaterialAuxVarGetValue(material_auxvars(grid%nL2G(local_id)),ivar)
+      enddo
+    case(PERMEABILITY,PERMEABILITY_X,PERMEABILITY_Y, PERMEABILITY_Z, &
+         PERMEABILITY_XY,PERMEABILITY_XZ,PERMEABILITY_YZ, &
+         GAS_PERMEABILITY,GAS_PERMEABILITY_X,GAS_PERMEABILITY_Y, &
+         GAS_PERMEABILITY_Z)
       ivar_temp = ivar
-      if (ivar_temp == PERMEABILITY) ivar_temp = PERMEABILITY_X 
+      ! only liquid permeabilities in x, y, z are stored.  
+      select case(ivar)
+        case(PERMEABILITY,GAS_PERMEABILITY,GAS_PERMEABILITY_X)
+          ivar_temp = PERMEABILITY_X
+        case(GAS_PERMEABILITY_Y)
+          ivar_temp = PERMEABILITY_Y
+        case(GAS_PERMEABILITY_Z)
+          ivar_temp = PERMEABILITY_Z
+      end select
       do local_id=1,grid%nlmax
         vec_ptr(local_id) = &
           MaterialAuxVarGetValue(material_auxvars(grid%nL2G(local_id)), &
                                  ivar_temp)
       enddo
+      select case(option%iflowmode)
+        case(WF_MODE)
+          do local_id=1,grid%nlmax
+            ghosted_id = grid%nL2G(local_id)
+            call WIPPFloScalePerm(patch%aux%WIPPFlo%auxvars(ZERO_INTEGER, &
+                                                            ghosted_id), &
+                                  material_auxvars(ghosted_id), &
+                                  vec_ptr(local_id),ivar)
+          enddo
+      end select
     case(PHASE)
       call VecGetArrayF90(field%iphas_loc,vec_ptr2,ierr);CHKERRQ(ierr)
       do local_id=1,grid%nlmax
@@ -5611,6 +5651,7 @@ function PatchGetVariableValueAtCell(patch,field,reaction,option, &
   use Variables_module
   use General_Aux_module, only : general_fmw => fmw_comp, &
                                  GAS_STATE, LIQUID_STATE
+  use WIPP_Flow_Aux_module, only : WIPPFloScalePerm
   use Material_Aux_class
 
   implicit none
@@ -6138,7 +6179,104 @@ function PatchGetVariableValueAtCell(patch,field,reaction,option, &
             value = patch%aux%TOil_ims%auxvars(ZERO_INTEGER,ghosted_id)% &
                     effective_porosity
         end select 
-    
+
+      else if (associated(patch%aux%TOWG)) then 
+
+        select case(ivar)
+          case(TEMPERATURE)
+            value = patch%aux%TOWG%auxvars(ZERO_INTEGER,ghosted_id)%temp
+          case(MAXIMUM_PRESSURE)
+            value = maxval(patch%aux%TOWG%auxvars(ZERO_INTEGER,ghosted_id)% &
+                           pres(option%liquid_phase:option%gas_phase))
+          case(LIQUID_PRESSURE)
+            value = patch%aux%TOWG%auxvars(ZERO_INTEGER,ghosted_id)% &
+                  pres(option%liquid_phase)
+          case(OIL_PRESSURE)
+            value = patch%aux%TOWG%auxvars(ZERO_INTEGER,ghosted_id)% & 
+                  pres(option%oil_phase)
+          case(GAS_PRESSURE)
+            value = patch%aux%TOWG%auxvars(ZERO_INTEGER,ghosted_id)% & 
+                  pres(option%gas_phase)
+          case(CAPILLARY_PRESSURE)
+            value = patch%aux%TOWG%auxvars(ZERO_INTEGER,ghosted_id)% &
+                  pc(option%liquid_phase)
+          case(CAPILLARY_PRESSURE_OGC)
+            value = patch%aux%TOWG%auxvars(ZERO_INTEGER,ghosted_id)% &
+                  pc(option%oil_phase)
+          case(LIQUID_SATURATION)
+            value = patch%aux%TOWG%auxvars(ZERO_INTEGER,ghosted_id)% &
+                  sat(option%liquid_phase)
+          case(LIQUID_DENSITY)
+            value = patch%aux%TOWG%auxvars(ZERO_INTEGER,ghosted_id)% &
+                  den_kg(option%liquid_phase)
+          case(LIQUID_DENSITY_MOL)
+            value = patch%aux%TOWG%auxvars(ZERO_INTEGER,ghosted_id)% &
+                  den(option%liquid_phase)
+          case(LIQUID_ENERGY)
+            if (isubvar == ZERO_INTEGER) then
+              value = patch%aux%TOWG%auxvars(ZERO_INTEGER,ghosted_id)% &
+                  U(option%liquid_phase)
+            else
+              value = patch%aux%TOWG%auxvars(ZERO_INTEGER, & 
+                      ghosted_id)%U(option%liquid_phase) * &
+                    patch%aux%TOWG%auxvars(ZERO_INTEGER, &
+                      ghosted_id)%den(option%liquid_phase)
+            endif
+          case(LIQUID_MOBILITY)
+            value = patch%aux%TOWG%auxvars(ZERO_INTEGER,ghosted_id)% &
+                    mobility(option%liquid_phase)
+          case(OIL_SATURATION)
+            value = patch%aux%TOWG%auxvars(ZERO_INTEGER,ghosted_id)% &
+                    sat(option%oil_phase)
+          case(OIL_ENERGY)
+            if (isubvar == ZERO_INTEGER) then
+              value = patch%aux%TOWG%auxvars(ZERO_INTEGER,ghosted_id)% &
+                    U(option%oil_phase)
+            else
+              value = patch%aux%TOWG%auxvars(ZERO_INTEGER, &
+                      ghosted_id)%U(option%oil_phase) * &
+                    patch%aux%TOWG%auxvars(ZERO_INTEGER, &
+                      ghosted_id)%den(option%oil_phase)
+            endif
+          case(OIL_DENSITY) 
+            value = patch%aux%TOWG%auxvars(ZERO_INTEGER,ghosted_id)% &
+                    den_kg(option%oil_phase)
+          case(OIL_DENSITY_MOL) 
+            value = patch%aux%TOWG%auxvars(ZERO_INTEGER,ghosted_id)% &
+                    den(option%oil_phase)
+          case(OIL_MOBILITY)
+            value = patch%aux%TOWG%auxvars(ZERO_INTEGER,ghosted_id)% &
+                    mobility(option%oil_phase)
+          case(GAS_SATURATION)
+            value = patch%aux%TOWG%auxvars(ZERO_INTEGER,ghosted_id)% &
+                    sat(option%gas_phase)
+          case(GAS_ENERGY)
+            if (isubvar == ZERO_INTEGER) then
+              value = patch%aux%TOWG%auxvars(ZERO_INTEGER,ghosted_id)% &
+                      U(option%gas_phase)
+            else
+              value = patch%aux%TOWG%auxvars(ZERO_INTEGER, &
+                      ghosted_id)%U(option%gas_phase) * &
+                    patch%aux%TOWG%auxvars(ZERO_INTEGER, &
+                      ghosted_id)%den(option%gas_phase)
+            endif
+          case(GAS_DENSITY) 
+            value = patch%aux%TOWG%auxvars(ZERO_INTEGER,ghosted_id)% &
+                    den_kg(option%gas_phase)
+          case(GAS_DENSITY_MOL) 
+            value = patch%aux%TOWG%auxvars(ZERO_INTEGER,ghosted_id)% &
+                    den(option%gas_phase)
+          case(GAS_MOBILITY)
+            value = patch%aux%TOWG%auxvars(ZERO_INTEGER,ghosted_id)% &
+                    mobility(option%gas_phase)
+          case(EFFECTIVE_POROSITY)
+            value = patch%aux%TOWG%auxvars(ZERO_INTEGER,ghosted_id)% &
+                    effective_porosity
+          !need to add:
+          ! - gas and oil mole fraction for the black oil model
+          ! - solvent_saturation for SOLVENT model
+        end select 
+        
       endif
       
     case(PH,PE,EH,O2,PRIMARY_MOLALITY,PRIMARY_MOLARITY,SECONDARY_MOLALITY, &
@@ -6382,13 +6520,31 @@ function PatchGetVariableValueAtCell(patch,field,reaction,option, &
         case(REACTION_AUXILIARY)
           value = patch%aux%RT%auxvars(ghosted_id)%auxiliary_data(isubvar)
       end select
-    case(POROSITY,MINERAL_POROSITY,PERMEABILITY,PERMEABILITY_X, &
-         PERMEABILITY_Y, PERMEABILITY_Z,PERMEABILITY_XY,PERMEABILITY_XZ, &
-         PERMEABILITY_YZ,VOLUME,TORTUOSITY,SOIL_COMPRESSIBILITY, &
+    case(POROSITY,MINERAL_POROSITY,VOLUME,TORTUOSITY,SOIL_COMPRESSIBILITY, &
          SOIL_REFERENCE_PRESSURE)
+      value = MaterialAuxVarGetValue(material_auxvars(ghosted_id),ivar)
+    case(PERMEABILITY,PERMEABILITY_X,PERMEABILITY_Y, PERMEABILITY_Z, &
+         PERMEABILITY_XY,PERMEABILITY_XZ,PERMEABILITY_YZ, &
+         GAS_PERMEABILITY,GAS_PERMEABILITY_X,GAS_PERMEABILITY_Y, &
+         GAS_PERMEABILITY_Z)
       ivar_temp = ivar
-      if (ivar_temp == PERMEABILITY) ivar_temp = PERMEABILITY_X 
+      ! only liquid permeabilities in x, y, z are stored.  
+      select case(ivar)
+        case(PERMEABILITY,GAS_PERMEABILITY,GAS_PERMEABILITY_X)
+          ivar_temp = PERMEABILITY_X
+        case(GAS_PERMEABILITY_Y)
+          ivar_temp = PERMEABILITY_Y
+        case(GAS_PERMEABILITY_Z)
+          ivar_temp = PERMEABILITY_Z
+      end select
       value = MaterialAuxVarGetValue(material_auxvars(ghosted_id),ivar_temp)
+      select case(option%iflowmode)
+        case(WF_MODE)
+          call WIPPFloScalePerm(patch%aux%WIPPFlo%auxvars(ZERO_INTEGER, &
+                                                          ghosted_id), &
+                                material_auxvars(ghosted_id), &
+                                value,ivar)
+      end select
     case(PHASE)
       call VecGetArrayF90(field%iphas_loc,vec_ptr2,ierr);CHKERRQ(ierr)
       value = vec_ptr2(ghosted_id)
@@ -7328,7 +7484,9 @@ subroutine PatchSetVariable(patch,field,option,vec,vec_format,ivar,isubvar)
         'soil compressibility or soil reference pressure in ' // &
         '"PatchSetVariable" not supported.'
       call printErrMsg(option)
-    case(PERMEABILITY,PERMEABILITY_X,PERMEABILITY_Y,PERMEABILITY_Z)
+    case(PERMEABILITY,PERMEABILITY_X,PERMEABILITY_Y,PERMEABILITY_Z, &
+         GAS_PERMEABILITY,GAS_PERMEABILITY_X,GAS_PERMEABILITY_Y, &
+         GAS_PERMEABILITY_Z)
       option%io_buffer = 'Setting of permeability in "PatchSetVariable"' // &
         ' not supported.'
       call printErrMsg(option)
