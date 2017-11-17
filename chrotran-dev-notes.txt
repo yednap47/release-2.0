@@ -72,3 +72,19 @@ git checkout b4dccf5
 git tag v1.0
 git push origin --tags
 # remove temporary branch if necessary
+
+#------------------------------------------------------------------------------
+# Merging chrotran and dithionite repositories
+#------------------------------------------------------------------------------
+1) Pull most recent dev for both chrotran and pflotran-dithionite-new
+git pull https://bitbucket.org/pflotran/pflotran.git
+2) Run benchmarks for both repositores
+3) Copy dithionte sandbox to chrotran src directory
+4) Update makefile and reaction_sanbox.F90
+5) make chrotran
+6) Copy dithionite benchmarks to chrotran
+7) Rename executable from pflotran to chrotran in dithionite_benchmarks.sh
+7) Run benchmarks again
+8) Merge dithionite_benchmarks into chrotran_benchmarks (TODO)
+9) Move chromium_database.dat
+

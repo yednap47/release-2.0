@@ -9,7 +9,8 @@ module Reaction_Sandbox_module
   
   ! Add new reacton sandbox classes here.
   use Reaction_Sandbox_Chrotran_class
-  
+  use Reaction_Sandbox_Dithionite_class
+
   use PFLOTRAN_Constants_module
 
   implicit none
@@ -166,6 +167,8 @@ subroutine RSandboxRead2(local_sandbox_list,input,option)
         new_sandbox => CyberCreate()
       case('CHROTRAN_PARAMETERS')
         new_sandbox => ChrotranCreate()
+      case('DITHIONITE_PARAMETERS')
+        new_sandbox => DithioniteCreate()
       case default
         call InputKeywordUnrecognized(word,'CHEMISTRY,REACTION_SANDBOX',option)
     end select
