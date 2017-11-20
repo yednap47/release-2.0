@@ -62,7 +62,7 @@ CHEMISTRY
       RATE_CONSTANT 0.d0 mol/m^2-sec
     /
   /
-  DATABASE ../../database/chromium_dithionite.dat
+  DATABASE ../../database/chromium.dat
   ACTIVITY_COEFFICIENTS OFF
   LOG_FORMULATION
   OUTPUT

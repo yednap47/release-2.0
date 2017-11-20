@@ -86,5 +86,8 @@ git pull https://bitbucket.org/pflotran/pflotran.git
 7) Rename executable from pflotran to chrotran in dithionite_benchmarks.sh
 7) Run benchmarks again
 8) Merge dithionite_benchmarks into chrotran_benchmarks (TODO)
-9) Move chromium_database.dat
+9) Move chromium_database.dat, merge with chem.dat
+10) Change database in chrotran_benchmarks and chrotran_examples to chromium_database.dat
+11) Change name of database to chromium.dat
+12) Change and directory of database to chromium.dat in examples and benchmarks
 
