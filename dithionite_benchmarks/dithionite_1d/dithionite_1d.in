@@ -11,7 +11,6 @@ SIMULATION
       NUMERICAL_JACOBIAN
     /
   /
-#  RESTART 1d-allReactions-10m-checkpoint-restart.chk 0.
 END
 
 SUBSURFACE
@@ -148,7 +147,6 @@ MATERIAL_PROPERTY soil1
   PERMEABILITY
      PERM_ISO 2.36944d-11
   /
-#  LONGITUDINAL_DISPERSIVITY 5.d0
 END
 
 #=========================== characteristic curves ============================
@@ -166,9 +164,6 @@ END
 
 #=========================== output options ===================================
 OUTPUT
-  FORMAT HDF5
-  VELOCITY_AT_CENTER
-#  PERIODIC TIME 1.d0 d
   TIMES d 10.0 40.0 325.0
   PRINT_COLUMN_IDS
   MASS_BALANCE_FILE

@@ -2,6 +2,7 @@ import numpy as np
 import itertools as it
 import odespy
 import matplotlib.pyplot as plt
+import sys
 
 liter_b_to_m3_b = 1e3
 
@@ -133,3 +134,37 @@ def plot_benchmarks(ax,results_ode = {}, results_pflotran = {}, ode_plotvars =[]
 	ax.legend(lns, legend_list, ncol=1, fancybox=True, shadow=False, prop={'size': str(fontsize)}, loc='best')
 
 	return lns
+
+def calc_regression(ts = 1.0e-2,tol = 1.0e-5,results_ode={}, results_pflotran={}, ode_plotvars=[], pflo_plotvars=[],sim=''):
+	debug = False
+	regression_result = []
+	for i in range(0,len(pflo_plotvars)):
+		# Find indices of datasets that occur during the specified timestep (ts)
+		i_pfle = map(lambda x: x  % ts == 0, results_pflotran['time'])
+		i_ode = map(lambda x: x  % ts == 0, results_ode['time'])
+
+		# # Error checking
+		# if len(np.extract(i_pfle, results_pflotran['time'])) != len(np.extract(i_ode, results_ode['time'])):
+		# 	sys.exit("Length of pflotran regression time series does not equal length of ode time series for " + pflo_plotvars[i][0] + " in " + sim + " benchmark!")
+
+		# Grab data associated with timestep
+		regrpfl = np.extract(i_pfle, results_pflotran[pflo_plotvars[i][0] + " " + pflo_plotvars[i][1]])
+		regrode = np.extract(i_ode, results_ode[ode_plotvars[i]])
+		delta = abs(regrpfl - regrode)
+
+		# For debug
+		if debug:
+			print(regrpfl)
+			print(regrode)
+			print(delta)
+
+		# Return results of regression test
+		if len([j for j, x in enumerate(map(lambda x: x > tol, delta)) if x]) > 0:
+			regression_result.append(0) # FAILS
+			print("Regression test FAILED for " + pflo_plotvars[i][0] + " in " + sim + " benchmark!")
+			print()
+		else:
+			regression_result.append(1) # SUCCESS
+			print("Regression test PASSED for " + pflo_plotvars[i][0] + " in " + sim + " benchmark!")
+
+	return regression_result
