@@ -144,7 +144,7 @@ END
 
 #=========================== output options ===================================
 OUTPUT
-  PERIODIC_OBSERVATION TIMESTEP 1
+  PERIODIC_OBSERVATION TIME 0.1 h
   PRINT_COLUMN_IDS
 END
 

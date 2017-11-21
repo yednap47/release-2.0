@@ -47,3 +47,8 @@ ax[1].yaxis.set_major_formatter(majorFormatter)
 plt.suptitle("microbe_clogging benchmark")
 plt.tight_layout(rect=[0, 0.03, 1, 0.95])
 f.savefig('microbe_clogging.png')
+
+# ------------------------------------------------------------------------------
+# Calculate regression test error
+# ------------------------------------------------------------------------------
+
