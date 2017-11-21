@@ -103,7 +103,4 @@ plt.suptitle("abiotic benchmark")
 plt.tight_layout(rect=[0, 0.03, 1, 0.95])
 plt.savefig(simbasename + '.png')
 
-# ------------------------------------------------------------------------------
-# Calculate regression test error
-# ------------------------------------------------------------------------------
 regression_result = pf.calc_regression(ts = 1.0e-2,tol = 1.0e-5,results_ode=results_ode, results_pflotran=results_pflotran, ode_plotvars=ode_plotvars, pflo_plotvars=pflo_plotvars, sim=simbasename)

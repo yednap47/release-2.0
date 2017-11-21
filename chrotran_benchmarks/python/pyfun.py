@@ -3,6 +3,7 @@ import itertools as it
 import odespy
 import matplotlib.pyplot as plt
 import sys
+import h5py
 
 liter_b_to_m3_b = 1e3
 
@@ -181,6 +182,29 @@ def getobsdata(variable_list=[], observation_list=[], observation_filenames=[]):
 				combined_dict_trimmed[item[0] + " " + item[1]] = var_new
 
 	return combined_dict_trimmed
+
+def readh5_1d(filename='',timesteps=[],dt=0.0,myvars=[]):
+	f = h5py.File(filename, 'r')
+	keys = f.keys()
+	timekeys = [key for key in keys if 'Time:' in key]
+	times = [float(timekey.split('Time:  ')[1].split(' d')[0]) for timekey in timekeys]
+	st = sorted(times)
+	keydict = dict(zip(times,timekeys))
+
+	# get coordinates
+	xgrid = f['Coordinates']['X [m]'].value
+	ygrid = f['Coordinates']['Y [m]'].value
+	# x, y = np.meshgrid(xgrid, ygrid)
+	x, y = np.mgrid[min(xgrid):max(xgrid):xgrid[1]-xgrid[0], min(ygrid):max(ygrid):ygrid[1]-ygrid[0]]
+
+	results = dict()
+	for myvar in myvars:
+		results[myvar] = []
+		for timestep in timesteps:
+			# get values at the well (center node)
+			results[myvar].append(f[keydict[timestep*dt]][myvar].value[1][1][0])
+
+	return results
 
 def plot_benchmarks(ax,results_ode = {}, results_pflotran = {}, ode_plotvars =[], pflo_plotvars = [], legend_list=[], xlabel='', ylabel='', xlims=[], ylims=[], skipfactor=1, fontsize=10, mycmap=plt.cm.jet(np.linspace(0,1,5)), majorFormatter=plt.matplotlib.ticker.FormatStrFormatter("%0.1e")):
 	"""

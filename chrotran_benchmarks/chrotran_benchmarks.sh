@@ -1,5 +1,10 @@
 #!/bin/bash
 
+rm */*.out
+rm */*.tec
+rm microbe_clogging/microbe_clogging.h5
+rm -r results_benchmark
+
 cd abiotic
 ../../src/pflotran/chrotran -pflotranin abiotic.in >/dev/null 2>/dev/null
 python abiotic.py
