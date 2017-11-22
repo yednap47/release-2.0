@@ -56,7 +56,7 @@ init = {'H+'		: 1.e-11, # [M]
 }
 
 dithionite_sandbox = pf.make_dithionite_sandbox(pars)
-u, t = pf.run_ode(init, pars, sopt, dithionite_sandbox)
+u, t = pf.run_ode_dithionite(init, pars, sopt, dithionite_sandbox)
 
 L_water = pars['v_cell'] * pars['por'] * pars['s'] * 1.e3 # [L]
 results_ode = {}
@@ -131,4 +131,4 @@ regression_result = pf.calc_regression(ts = 1.0,tol = 1.0e-2,results_ode=results
 
 plt.suptitle("Fe(III) sediments reduced by S2O4--")
 plt.tight_layout(rect=[0, 0.03, 1, 0.95])
-plt.savefig(simbasename + '.png')
+plt.savefig('dithionite_' + simbasename + '.png')
