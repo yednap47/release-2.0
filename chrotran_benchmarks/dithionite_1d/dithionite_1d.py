@@ -28,7 +28,7 @@ ax.yaxis.set_major_formatter(majorFormatter)
 ax.legend(ncol=1, fancybox=True, shadow=False, prop={'size': '10.0'}, loc='best')
 plt.tight_layout()
 
-plt.savefig(simbasename + '.png',dpi=100)
+plt.savefig('dithionite_' + simbasename + '.png',dpi=100)
 
 # For regression test, use gold standard file instead of python ODE
 pflo_plotvars = [[variable_list[0]], observation_list]

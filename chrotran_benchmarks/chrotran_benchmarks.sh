@@ -2,9 +2,11 @@
 
 rm */*.out
 rm */*.tec
+rm */*.dat
 rm microbe_clogging/microbe_clogging.h5
 rm -r results_benchmark
 
+# Chrotran v1.0 benchmarks
 cd abiotic
 ../../src/pflotran/chrotran -pflotranin abiotic.in >/dev/null 2>/dev/null
 python abiotic.py
@@ -37,6 +39,31 @@ python microbe_respiration.py
 cd ../microbe_clogging
 ../../src/pflotran/chrotran -pflotranin microbe_clogging.in >/dev/null 2>/dev/null
 python microbe_clogging.py
+
+# Chrotran v2.0 benchmarks
+cd ../dithionite_s2o4_disp
+../../src/pflotran/chrotran -pflotranin s2o4_disp.in >/dev/null 2>/dev/null
+python s2o4_disp.py
+
+cd ../dithionite_s2o4_o2
+../../src/pflotran/chrotran -pflotranin s2o4_o2.in >/dev/null 2>/dev/null
+python s2o4_o2.py
+
+cd ../dithionite_s2o4_fe3
+../../src/pflotran/chrotran -pflotranin s2o4_fe3.in >/dev/null 2>/dev/null
+python s2o4_fe3.py
+
+cd ../dithionite_fe2_o2
+../../src/pflotran/chrotran -pflotranin fe2_o2.in >/dev/null 2>/dev/null
+python fe2_o2.py
+
+cd ../dithionite_fe2_cr6
+../../src/pflotran/chrotran -pflotranin fe2_cr6.in >/dev/null 2>/dev/null
+python fe2_cr6.py
+
+cd ../dithionite_1d
+mpirun -np 8 ../../src/pflotran/chrotran -pflotranin dithionite_1d.in >/dev/null 2>/dev/null
+python dithionite_1d.py
 
 cd ..
 
