@@ -30,6 +30,7 @@
 'molasses' 0. 0. 0.
 'ethanol' 0. 0. 0.
 'biocide' 0. 0. 0.
+'rdx' 0. 0. 0.
 
 'null' 0 0 0
 ! SECONDARY SPECIES
