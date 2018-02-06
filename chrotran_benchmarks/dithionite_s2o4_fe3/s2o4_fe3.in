@@ -1,6 +1,6 @@
-# Id: s2o4-fe3.in, Mon 24 Apr 2017 01:11:19 PM MDT pandeys #
+# Id: s2o4_fe3.in, Mon 24 Apr 2017 01:11:19 PM MDT pandeys #
 # Created by Sachin Pandey, LANL
-# Description:
+# Description: Benchmark for Fe(III) mineral reduction by dithionite.
 #------------------------------------------------------------------------------
 
 SIMULATION

@@ -1,6 +1,6 @@
-# Id: fe2-o2.in, Mon 24 Apr 2017 01:11:19 PM MDT pandeys #
+# Id: fe2_o2.in, Mon 24 Apr 2017 01:11:19 PM MDT pandeys #
 # Created by Sachin Pandey, LANL
-# Description:
+# Description: Benchmark for sorbed Fe(II) oxidation by oxygen.
 #------------------------------------------------------------------------------
 
 SIMULATION

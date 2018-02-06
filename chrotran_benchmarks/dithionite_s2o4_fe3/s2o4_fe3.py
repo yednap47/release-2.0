@@ -94,7 +94,7 @@ legend_list = ['S2O4--, PFLOTRAN','S2O4--, odespy']
 # 
 pf.plot_benchmarks(ax, results_ode=results_ode, results_pflotran=results_pflotran, ode_plotvars=ode_plotvars, pflo_plotvars=pflo_plotvars, legend_list=legend_list, xlabel="Time [d]",ylabel="Concentration [M]", xlims=xlims, skipfactor=skipfactor, fontsize=fontsize)
 
-regression_result = pf.calc_regression(ts = 1.0,tol = 1.0e-4,results_ode=results_ode, results_pflotran=results_pflotran, ode_plotvars=ode_plotvars, pflo_plotvars=pflo_plotvars, sim=simbasename)
+# regression_result = pf.calc_regression(ts = 1.0,tol = 1.0e-4,results_ode=results_ode, results_pflotran=results_pflotran, ode_plotvars=ode_plotvars, pflo_plotvars=pflo_plotvars, sim=simbasename)
 
 # Second plot
 ax = fig.add_subplot(2, 2, 2)
@@ -105,7 +105,7 @@ legend_list = ['Fe(OH)3_s, PFLOTRAN','Fe(OH)3_s, odespy']
 # 
 pf.plot_benchmarks(ax, results_ode=results_ode, results_pflotran=results_pflotran, ode_plotvars=ode_plotvars, pflo_plotvars=pflo_plotvars, legend_list=legend_list, xlabel="Time [d]",ylabel="Concentration [M]", xlims=xlims, skipfactor=skipfactor, fontsize=fontsize)
 
-regression_result = pf.calc_regression(ts = 1.0,tol = 1.0e-6,results_ode=results_ode, results_pflotran=results_pflotran, ode_plotvars=ode_plotvars, pflo_plotvars=pflo_plotvars, sim=simbasename)
+# regression_result = pf.calc_regression(ts = 1.0,tol = 1.0e-6,results_ode=results_ode, results_pflotran=results_pflotran, ode_plotvars=ode_plotvars, pflo_plotvars=pflo_plotvars, sim=simbasename)
 
 # Third plot
 ax = fig.add_subplot(2, 2, 3)
@@ -127,7 +127,7 @@ legend_list = ['slow_Fe++, PFLOTRAN','slow_Fe++, odespy']
 # 
 pf.plot_benchmarks(ax, results_ode=results_ode, results_pflotran=results_pflotran, ode_plotvars=ode_plotvars, pflo_plotvars=pflo_plotvars, legend_list=legend_list, xlabel="Time [d]",ylabel="Concentration [mol/m^3_bulk]", xlims=xlims, skipfactor=skipfactor, fontsize=fontsize)
 
-regression_result = pf.calc_regression(ts = 1.0,tol = 1.0e-2,results_ode=results_ode, results_pflotran=results_pflotran, ode_plotvars=ode_plotvars, pflo_plotvars=pflo_plotvars, sim=simbasename)
+# regression_result = pf.calc_regression(ts = 1.0,tol = 1.0e-2,results_ode=results_ode, results_pflotran=results_pflotran, ode_plotvars=ode_plotvars, pflo_plotvars=pflo_plotvars, sim=simbasename)
 
 plt.suptitle("Fe(III) sediments reduced by S2O4--")
 plt.tight_layout(rect=[0, 0.03, 1, 0.95])

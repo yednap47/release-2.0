@@ -40,7 +40,7 @@ cd ../microbe_clogging
 ../../src/pflotran/chrotran -pflotranin microbe_clogging.in >/dev/null 2>/dev/null
 python microbe_clogging.py
 
-# Chrotran v2.0 benchmarks
+# Chrotran v1.2 benchmarks (dithionite)
 cd ../dithionite_s2o4_disp
 ../../src/pflotran/chrotran -pflotranin s2o4_disp.in >/dev/null 2>/dev/null
 python s2o4_disp.py
@@ -73,4 +73,4 @@ fi
 
 mkdir results_benchmark
 mv ./*/*.png results_benchmark
-echo results are in results_benchmark directory
+echo Figures are in results_benchmark directory

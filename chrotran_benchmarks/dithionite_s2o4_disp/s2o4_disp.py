@@ -92,7 +92,7 @@ legend_list = ['H+, PFLOTRAN','H+, odespy']
 # 
 pf.plot_benchmarks(ax, results_ode=results_ode, results_pflotran=results_pflotran, ode_plotvars=ode_plotvars, pflo_plotvars=pflo_plotvars, legend_list=legend_list, xlabel="Time [d]",ylabel="Concentration [M]", xlims=xlims, skipfactor=skipfactor, fontsize=fontsize)
 
-regression_result = pf.calc_regression(ts = 1.0,tol = 1.0e-4,results_ode=results_ode, results_pflotran=results_pflotran, ode_plotvars=ode_plotvars, pflo_plotvars=pflo_plotvars, sim=simbasename)
+# regression_result = pf.calc_regression(ts = 1.0,tol = 1.0e-4,results_ode=results_ode, results_pflotran=results_pflotran, ode_plotvars=ode_plotvars, pflo_plotvars=pflo_plotvars, sim=simbasename)
 
 # Second plot
 ax = fig.add_subplot(2, 2, 2)
@@ -114,7 +114,7 @@ legend_list = ['S2O3--, PFLOTRAN','S2O3--, odespy']
 # 
 pf.plot_benchmarks(ax, results_ode=results_ode, results_pflotran=results_pflotran, ode_plotvars=ode_plotvars, pflo_plotvars=pflo_plotvars, legend_list=legend_list, xlabel="Time [d]",ylabel="Concentration [M]", xlims=xlims, skipfactor=skipfactor, fontsize=fontsize)
 
-regression_result = pf.calc_regression(ts = 1.0,tol = 1.0e-4,results_ode=results_ode, results_pflotran=results_pflotran, ode_plotvars=ode_plotvars, pflo_plotvars=pflo_plotvars, sim=simbasename)
+# regression_result = pf.calc_regression(ts = 1.0,tol = 1.0e-4,results_ode=results_ode, results_pflotran=results_pflotran, ode_plotvars=ode_plotvars, pflo_plotvars=pflo_plotvars, sim=simbasename)
 
 # Fourth plot
 ax = fig.add_subplot(2, 2, 4)
@@ -125,7 +125,7 @@ legend_list = ['SO3--, PFLOTRAN','SO3--, odespy']
 # 
 pf.plot_benchmarks(ax, results_ode=results_ode, results_pflotran=results_pflotran, ode_plotvars=ode_plotvars, pflo_plotvars=pflo_plotvars, legend_list=legend_list, xlabel="Time [d]",ylabel="Concentration [M]", xlims=xlims, skipfactor=skipfactor, fontsize=fontsize)
 
-regression_result = pf.calc_regression(ts = 1.0,tol = 1.0e-4,results_ode=results_ode, results_pflotran=results_pflotran, ode_plotvars=ode_plotvars, pflo_plotvars=pflo_plotvars, sim=simbasename)
+# regression_result = pf.calc_regression(ts = 1.0,tol = 1.0e-4,results_ode=results_ode, results_pflotran=results_pflotran, ode_plotvars=ode_plotvars, pflo_plotvars=pflo_plotvars, sim=simbasename)
 
 plt.suptitle("S2O4-- degradation")
 plt.tight_layout(rect=[0, 0.03, 1, 0.95])

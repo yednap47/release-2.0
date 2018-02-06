@@ -1,6 +1,6 @@
-# Id: s2o4-o2.in, Mon 24 Apr 2017 01:09:25 PM MDT pandeys #
+# Id: s2o4_o2.in, Mon 24 Apr 2017 01:09:25 PM MDT pandeys #
 # Created by Sachin Pandey, LANL
-# Description:
+# Description: Benchmark for oxidation of dithionite by oxygen.
 #------------------------------------------------------------------------------
 
 SIMULATION
